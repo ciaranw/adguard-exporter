@@ -119,7 +119,7 @@ func collectDhcp(ctx context.Context, client *adguard.Client) {
 }
 
 func collectQueryLogStats(ctx context.Context, client *adguard.Client) {
-	stats, times, err := client.GetQueryLog(ctx)
+	stats, times, clientQueries, err := client.GetQueryLog(ctx)
 	if err != nil {
 		log.Printf("ERROR - could not get query type stats: %v\n", err)
 		metrics.ScrapeErrors.WithLabelValues(client.Url()).Inc()
@@ -133,5 +133,8 @@ func collectQueryLogStats(ctx context.Context, client *adguard.Client) {
 		metrics.ProcessingTimeBucket.
 			WithLabelValues(client.Url(), t.Client, t.Upstream).
 			Observe(float64(t.Elapsed / time.Millisecond))
+	}
+	for _, v := range clientQueries {
+		metrics.TopQueriedDomainsByClient.WithLabelValues(client.Url(), v.Host, v.Client).Observe(float64(v.Time.Unix()))
 	}
 }

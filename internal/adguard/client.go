@@ -95,22 +95,27 @@ func (c *Client) GetDhcp(ctx context.Context) (*DhcpStatus, error) {
 	return out, nil
 }
 
-func (c *Client) GetQueryLog(ctx context.Context) (map[string]int, []QueryTime, error) {
+func (c *Client) GetQueryLog(ctx context.Context) (map[string]int, []QueryTime, []ClientQuery, error) {
 	log := &queryLog{}
 	err := c.do(ctx, http.MethodGet, "/control/querylog?limit=1000&response_status=all", log)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	types, err := c.getQueryTypes(log)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	times, err := c.getQueryTimes(log)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return types, times, nil
+	clientQueries, err := c.getClientDomains(log)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return types, times, clientQueries, nil
 }
 
 func (c *Client) getQueryTypes(log *queryLog) (map[string]int, error) {
@@ -149,6 +154,35 @@ func (c *Client) getQueryTimes(l *queryLog) ([]QueryTime, error) {
 			Upstream: q.Upstream,
 		})
 	}
+	return out, nil
+}
+
+func (c *Client) getClientDomains(l *queryLog) ([]ClientQuery, error) {
+	out := []ClientQuery{}
+	for _, q := range l.Log {
+		if q.Upstream == "" {
+			q.Upstream = "self"
+		}
+
+		out = append(out, ClientQuery{
+			Upstream: q.Upstream,
+			Host:     q.Question.Host,
+			Client:   q.Client,
+			Time:     q.Time,
+		})
+
+		// ms, err := strconv.ParseFloat(q.Elapsed, 32)
+		// if err != nil {
+		// 	log.Printf("ERROR - could not parse query elapsed time %v as float\n", q.Elapsed)
+		// 	continue
+		// }
+		// out = append(out, QueryTime{
+		// 	Elapsed:  time.Millisecond * time.Duration(ms),
+		// 	Client:   q.Client,
+		// 	Upstream: q.Upstream,
+		// })
+	}
+
 	return out, nil
 }
 

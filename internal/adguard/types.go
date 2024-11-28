@@ -72,21 +72,28 @@ type type65 struct {
 }
 
 type logEntry struct {
-	Answer      []answer `json:"answer"`
-	DNSSec      Bool     `json:"answer_dnssec"`
-	Client      string   `json:"client"`
-	ClientProto string   `json:"client_proto"`
-	Elapsed     string   `json:"elapsedMs"`
-	Question    query    `json:"question"`
-	Reason      string   `json:"reason"`
-	Status      string   `json:"status"`
-	Time        string   `json:"time"`
-	Upstream    string   `json:"upstream"`
+	Answer      []answer  `json:"answer"`
+	DNSSec      Bool      `json:"answer_dnssec"`
+	Client      string    `json:"client"`
+	ClientProto string    `json:"client_proto"`
+	Elapsed     string    `json:"elapsedMs"`
+	Question    query     `json:"question"`
+	Reason      string    `json:"reason"`
+	Status      string    `json:"status"`
+	Time        time.Time `json:"time"`
+	Upstream    string    `json:"upstream"`
 }
 
 type QueryTime struct {
 	Elapsed  time.Duration
 	Client   string
+	Upstream string
+}
+
+type ClientQuery struct {
+	Client   string
+	Host     string
+	Time     time.Time
 	Upstream string
 }
 

@@ -93,6 +93,11 @@ var (
 		Namespace: "adguard",
 		Help:      "The number of queries for a specific type",
 	}, []string{"server", "type"})
+	TopQueriedDomainsByClient = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name:      "top_queried_domains_by_client",
+		Namespace: "adguard",
+		Help:      "The number of queries for the top domains, by client",
+	}, []string{"server", "domain", "client"})
 
 	// DHCP
 	DhcpEnabled = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -168,6 +173,7 @@ func Init() {
 	prometheus.MustRegister(TopUpstreamsAvgTimes)
 	prometheus.MustRegister(QueryTypes)
 	prometheus.MustRegister(ProcessingTimeBucket)
+	prometheus.MustRegister(TopQueriedDomainsByClient)
 
 	// Status
 	prometheus.MustRegister(Running)
